@@ -31,15 +31,16 @@ It contains airline ticketing data including:
 
 The pipeline follows the Medallion Architecture:
 
-* **Bronze (TRAVEL_RAW)** – raw ingested data
-* **Silver (TRAVEL_CLEAN)** – cleaned and standardized data
+* **Bronze (TRAVEL_RAW)** – raw ingested data  
+* **Silver (AIRLINE, ROUTE, FACT_TRAVEL)** – cleaned and structured data model  
 * **Gold (TRAVEL_GOLD)** – aggregated data for analytics
-
+  
 ## Data Pipeline
 
 1. Load raw data into `TRAVEL_RAW`
-2. Clean data and create `TRAVEL_CLEAN`
-3. Aggregate data to create `TRAVEL_GOLD`
+2. Create dimension tables `AIRLINE`, `ROUTE`
+3. Create fact table `FACT_TRAVEL`
+4. Aggregate data to create `TRAVEL_GOLD`
 
 
 ## Data Cleaning (Silver Layer)
@@ -54,7 +55,7 @@ The following transformations were applied:
 
 ## Aggregation (Gold Layer)
 
-The Gold layer aggregates the cleaned data to calculate the number of transactions per airline, enabling identification of the most frequently used airlines.
+The Gold layer joins the fact and dimension tables and aggregates the data to calculate the number of transactions per airline and route.
 
 
 ## Data Quality Risks
@@ -73,11 +74,11 @@ The Gold layer aggregates the cleaned data to calculate the number of transactio
 
 ## Repository Structure
 
-* `pipeline.sql` – SQL script for the ELT pipeline
-* `DB Architecture.png` – architecture diagram
-* `README.md` – project documentation
-
-
+* `bronze/` – raw ingestion layer  
+* `silver/` – structured tables (AIRLINE, ROUTE, FACT_TRAVEL)  
+* `gold/` – aggregated analytics layer  
+* `DB Architecture.png` – architecture diagram  
+* `README.md` – project documentation  
 
 ## Author
 
