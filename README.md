@@ -1,10 +1,11 @@
 # flights-elt-medallion-pipeline
 
-ELT pipeline implementing the Medallion Architecture (Bronze, Silver, Gold) to process airline transaction data and identify the most frequently used airlines based on transaction counts. The pipeline is orchestrated using a Python entrypoint and declarative SQL transformations.
+ELT pipeline implementing Medallion Architecture (Bronze, Silver, Gold) to process airline transaction data and identify the most frequently used airlines based on transaction counts.
+The pipeline is orchestrated using a Python entrypoint and declarative SQL transformations.
 
 ---
 
-## Project Overview
+# Project Overview
 
 This project implements an ELT pipeline using the Medallion Architecture (Bronze, Silver, Gold) to process and analyze airline ticketing data.
 
@@ -14,7 +15,7 @@ The pipeline is orchestrated using Python and executes SQL transformations seque
 
 ---
 
-## Initial Problem Statement
+# Initial Problem Statement
 
 Airline ticketing data is often stored in raw and inconsistent formats, making it difficult to analyze trends such as the most frequently used airlines.
 
@@ -22,9 +23,10 @@ The objective of this project is to clean and transform the data in order to ide
 
 ---
 
-## Dataset
+# Dataset
 
 The dataset used in this project is available on Kaggle:
+
 https://www.kaggle.com/datasets/jayitabhattacharyya/hackerearth-arcenter-the-travelverse/data
 
 It contains airline ticketing data including:
@@ -39,7 +41,7 @@ It contains airline ticketing data including:
 
 ---
 
-## Architecture (Medallion)
+# Architecture (Medallion)
 
 The pipeline follows the Medallion Architecture:
 
@@ -47,11 +49,23 @@ The pipeline follows the Medallion Architecture:
 **Silver (AIRLINE, ROUTE, FACT_TRAVEL)** – cleaned and structured data model
 **Gold (TRAVEL_GOLD)** – aggregated data for analytics
 
-Data flows sequentially from Bronze to Silver to Gold.
+Data flows sequentially from Bronze → Silver → Gold.
 
 ---
 
-## Orchestration
+# Architecture Diagram
+
+![Architecture](High-Level Data Architecture.png)
+
+---
+
+# Data Model
+
+![Data Model](DB Architecture.png)
+
+---
+
+# Orchestration
 
 The pipeline is orchestrated using a Python entrypoint:
 
@@ -69,29 +83,60 @@ Each layer executes declarative SQL transformations.
 
 ---
 
-## Data Pipeline
+# Pipeline Execution Flow
 
-1. Load raw data into `TRAVEL_RAW`
-2. Clean and transform data in Silver layer
-3. Create dimension tables `AIRLINE`, `ROUTE`
-4. Create fact table `FACT_TRAVEL`
-5. Aggregate data to create `TRAVEL_GOLD`
+The pipeline executes SQL scripts in the following order:
+
+## Bronze
+
+* create_schema.sql
+* create_stage.sql
+* create_stage_table.sql
+* load_stage.sql
+* create_tables.sql
+* load_bronze.sql
+
+## Silver
+
+* create tables
+* transform data
+* build dimension AIRLINE
+* build dimension ROUTE
+* build FACT_TRAVEL
+
+## Gold
+
+* create_tables.sql
+* aggregation query (TRAVEL_GOLD)
+
+The pipeline is executed sequentially using Python orchestrator.
 
 ---
 
-## Data Cleaning (Silver Layer)
+# Data Pipeline
+
+1. Load raw data into TRAVEL_RAW
+2. Clean and transform data in Silver layer
+3. Create dimension tables AIRLINE and ROUTE
+4. Create fact table FACT_TRAVEL
+5. Aggregate data to create TRAVEL_GOLD
+
+---
+
+# Data Cleaning (Silver Layer)
 
 The following transformations were applied:
 
-* Removed NULL values from `transaction_key`
-* Removed duplicates using `DISTINCT`
-* Trimmed text fields (`ticketing_airline`, `agency`)
-* Converted `issue_date` to DATE format
-* Standardized airline and route data
+* Removed NULL values from transaction_key
+* Removed duplicates using DISTINCT
+* Trimmed text fields (ticketing_airline, agency)
+* Converted issue_date to DATE format
+* Standardized airline names
+* Standardized route data
 
 ---
 
-## Aggregation (Gold Layer)
+# Aggregation (Gold Layer)
 
 The Gold layer joins the fact and dimension tables and aggregates the data to calculate the number of transactions per airline and route.
 
@@ -99,44 +144,47 @@ This layer produces analytics-ready data.
 
 ---
 
-## Idempotency
+# Idempotency Strategy
 
 The pipeline is designed to be idempotent:
 
-* Bronze layer is append-based ingestion
+* Bronze layer uses append-only ingestion with batch_id
 * Silver layer uses deterministic transformations
-* Gold layer uses aggregation logic
-* Pipeline can be safely re-run without data corruption
+* Gold layer uses MERGE to avoid duplicates
+* Tables created using CREATE IF NOT EXISTS
+* Pipeline can be safely re-run multiple times
 
 ---
 
-## Data Quality Risks
+# Data Quality Risks
 
 1. Duplicate transaction keys may lead to incorrect aggregations
-2. Missing values in key fields such as `transaction_key`
-3. Invalid or inconsistent date formats in `issue_date`
+2. Missing values in transaction_key
+3. Invalid or inconsistent date formats in issue_date
 4. Inconsistent airline naming conventions
 5. Missing route information
 
 ---
 
-## Technologies Used
+# Technologies Used
 
 * Python (pipeline orchestration)
 * SQL (data transformations)
+* Snowflake
 * Medallion Architecture
 * ELT pipeline design
 * GitHub
 
 ---
 
-## Repository Structure
+# Repository Structure
 
 ```
-bronze/          – raw ingestion layer  
-silver/          – cleaned and structured tables  
-gold/            – aggregated analytics layer  
-orchestration/   – pipeline orchestrator (Python)  
+bronze/          - raw ingestion layer  
+silver/          - cleaned and structured tables  
+gold/            - aggregated analytics layer  
+orchestration/   - pipeline orchestrator (Python)  
+
 DB Architecture.png  
 High-Level Data Architecture.png  
 README.md  
@@ -144,7 +192,7 @@ README.md
 
 ---
 
-## How to Run
+# How to Run
 
 Clone the repository:
 
@@ -166,20 +214,22 @@ python orchestration/run_pipeline.py
 
 ---
 
-## Pipeline Flow
+# Pipeline Flow
 
 ```
-Bronze → Silver → Gold
-```
-
-Orchestrated using:
-
-```
-run_pipeline.py
+Raw Data
+   ↓
+Bronze
+   ↓
+Silver
+   ↓
+Gold
+   ↓
+Analytics
 ```
 
 ---
 
-## Author
+# Author
 
 Julia Kramek
