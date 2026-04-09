@@ -53,17 +53,13 @@ Data flows sequentially from Bronze → Silver → Gold.
 
 ---
 
-# Architecture Diagram
+## Architecture Diagram
 
-![Architecture](High-Level Data Architecture.png)
+![Architecture](high-level-architecture.png)
 
----
+## Data Model
 
-# Data Model
-
-![Data Model](DB Architecture.png)
-
----
+![Data Model](db-architecture.png)
 
 # Orchestration
 
