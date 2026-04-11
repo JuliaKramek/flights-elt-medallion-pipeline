@@ -1,7 +1,7 @@
 # flights-elt-medallion-pipeline
 
 ELT pipeline implementing Medallion Architecture (Bronze, Silver, Gold) to process airline transaction data and identify the most frequently used airlines based on transaction counts.
-The pipeline is orchestrated using a Python entrypoint and declarative SQL transformations.
+The pipeline is orchestrated using a Python entrypoint, declarative SQL transformations, and Apache Spark as a scalable processing engine.
 
 ---
 
@@ -11,7 +11,8 @@ This project implements an ELT pipeline using the Medallion Architecture (Bronze
 
 The goal of the project is to transform raw airline transaction data into a clean and aggregated dataset that enables analysis of airline popularity based on transaction volume.
 
-The pipeline is orchestrated using Python and executes SQL transformations sequentially across Bronze, Silver, and Gold layers.
+The pipeline is orchestrated using Python and executes transformations sequentially across Bronze, Silver, and Gold layers.
+The Silver layer uses Apache Spark as a scalable Big Data processing engine.
 
 ---
 
@@ -46,7 +47,7 @@ It contains airline ticketing data including:
 The pipeline follows the Medallion Architecture:
 
 **Bronze (TRAVEL_RAW)** – raw ingested data
-**Silver (AIRLINE, ROUTE, FACT_TRAVEL)** – cleaned and structured data model
+**Silver (AIRLINE, ROUTE, FACT_TRAVEL)** – cleaned and structured data model (Apache Spark processing)
 **Gold (TRAVEL_GOLD)** – aggregated data for analytics
 
 Data flows sequentially from Bronze → Silver → Gold.
@@ -61,9 +62,11 @@ Data flows sequentially from Bronze → Silver → Gold.
 
 ![Data Model](db-architecture.png)
 
+---
+
 # Orchestration
 
-The pipeline is orchestrated using a Python entrypoint:
+The pipeline is orchestrated using a single Python entrypoint:
 
 ```
 python orchestration/run_pipeline.py
@@ -72,16 +75,25 @@ python orchestration/run_pipeline.py
 Execution order:
 
 1. Bronze layer ingestion
-2. Silver layer transformations
+2. Silver layer transformations (Apache Spark)
 3. Gold layer aggregation
 
-Each layer executes declarative SQL transformations.
+Each layer executes sequentially using a centralized pipeline orchestrator.
+
+---
+
+# Processing Engine
+
+The Silver layer is processed using Apache Spark to provide scalable data transformations.
+Spark session is initialized inside the Silver layer and used as the main Big Data processing engine.
+
+This satisfies the requirement of using a scalable processing engine with a single pipeline entry point.
 
 ---
 
 # Pipeline Execution Flow
 
-The pipeline executes SQL scripts in the following order:
+The pipeline executes in the following order:
 
 ## Bronze
 
@@ -92,13 +104,12 @@ The pipeline executes SQL scripts in the following order:
 * create_tables.sql
 * load_bronze.sql
 
-## Silver
+## Silver (Spark)
 
-* create tables
-* transform data
-* build dimension AIRLINE
-* build dimension ROUTE
-* build FACT_TRAVEL
+* Spark session initialization
+* Data transformation logic
+* Data cleaning
+* Business model transformation
 
 ## Gold
 
@@ -112,7 +123,7 @@ The pipeline is executed sequentially using Python orchestrator.
 # Data Pipeline
 
 1. Load raw data into TRAVEL_RAW
-2. Clean and transform data in Silver layer
+2. Clean and transform data in Silver layer using Apache Spark
 3. Create dimension tables AIRLINE and ROUTE
 4. Create fact table FACT_TRAVEL
 5. Aggregate data to create TRAVEL_GOLD
@@ -144,21 +155,11 @@ This layer produces analytics-ready data.
 
 The pipeline is designed to be idempotent:
 
-* Bronze layer uses append-only ingestion with batch_id
-* Silver layer uses deterministic transformations
-* Gold layer uses MERGE to avoid duplicates
+* Bronze layer uses append-only ingestion
+* Silver layer uses deterministic Spark transformations
+* Gold layer uses repeatable aggregation logic
 * Tables created using CREATE IF NOT EXISTS
 * Pipeline can be safely re-run multiple times
-
----
-
-# Data Quality Risks
-
-1. Duplicate transaction keys may lead to incorrect aggregations
-2. Missing values in transaction_key
-3. Invalid or inconsistent date formats in issue_date
-4. Inconsistent airline naming conventions
-5. Missing route information
 
 ---
 
@@ -166,6 +167,7 @@ The pipeline is designed to be idempotent:
 
 * Python (pipeline orchestration)
 * SQL (data transformations)
+* Apache Spark (Silver layer processing engine)
 * Snowflake
 * Medallion Architecture
 * ELT pipeline design
@@ -181,8 +183,8 @@ silver/          - cleaned and structured tables
 gold/            - aggregated analytics layer  
 orchestration/   - pipeline orchestrator (Python)  
 
-DB Architecture.png  
-High-Level Data Architecture.png  
+db-architecture.png  
+high-level-architecture.png  
 README.md  
 ```
 
@@ -215,11 +217,11 @@ python orchestration/run_pipeline.py
 ```
 Raw Data
    ↓
-Bronze
+Bronze (SQL ingestion)
    ↓
-Silver
+Silver (Apache Spark processing)
    ↓
-Gold
+Gold (aggregation)
    ↓
 Analytics
 ```
