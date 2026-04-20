@@ -20,7 +20,7 @@ with DAG(
 
     bronze = BashOperator(
         task_id="bronze_layer",
-        bash_command="python /opt/project/bronze/bronze.py"
+        bash_command="python /opt/project/orchestration/bronze.py"
     )
 
     silver = BashOperator(
@@ -30,7 +30,7 @@ with DAG(
 
     gold = BashOperator(
         task_id="gold_layer",
-        bash_command="python /opt/project/gold/gold.py"
+        bash_command="python /opt/project/orchestration/gold.py"
     )
 
     bronze >> silver >> gold
