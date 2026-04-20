@@ -16,7 +16,7 @@ with DAG(
 
     silver = BashOperator(
         task_id="silver",
-        bash_command="python /opt/project/orchestration/silver.py"
+        bash_command="spark-submit /opt/project/silver/silver_job.py"
     )
 
     gold = BashOperator(
