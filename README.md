@@ -1,233 +1,225 @@
 # flights-elt-medallion-pipeline
 
-ELT pipeline implementing Medallion Architecture (Bronze, Silver, Gold) to process airline transaction data and identify the most frequently used airlines based on transaction counts.
-The pipeline is orchestrated using a Python entrypoint, declarative SQL transformations, and Apache Spark as a scalable processing engine.
+Production-style ELT pipeline based on the **Medallion Architecture** (**Bronze → Silver → Gold**) for processing airline transaction data and identifying the most frequently used airlines.
+
+The project demonstrates modern data engineering practices including:
+
+* Layered data architecture
+* Workflow orchestration with **Apache Airflow**
+* SQL-based transformations
+* Python pipeline components
+* Scalable processing concepts (Spark-ready Silver layer)
+* Re-runnable / idempotent pipeline design
 
 ---
 
-# Project Overview
+# Project Goal
 
-This project implements an ELT pipeline using the Medallion Architecture (Bronze, Silver, Gold) to process and analyze airline ticketing data.
+Airline transaction data is often stored in raw and inconsistent formats, making analytics difficult.
 
-The goal of the project is to transform raw airline transaction data into a clean and aggregated dataset that enables analysis of airline popularity based on transaction volume.
+The goal of this project is to transform raw records into clean, structured, and aggregated datasets that answer business questions such as:
 
-The pipeline is orchestrated using Python and executes transformations sequentially across Bronze, Silver, and Gold layers.
-The Silver layer uses Apache Spark as a scalable Big Data processing engine.
-
----
-
-# Initial Problem Statement
-
-Airline ticketing data is often stored in raw and inconsistent formats, making it difficult to analyze trends such as the most frequently used airlines.
-
-The objective of this project is to clean and transform the data in order to identify which airlines generate the highest number of transactions and support further analytical use cases.
+* Which airlines are used most frequently?
+* Which routes generate the most transactions?
+* How can raw operational data be converted into analytics-ready tables?
 
 ---
 
-# Dataset
+# Medallion Architecture
 
-The dataset used in this project is available on Kaggle:
+The pipeline follows the Medallion model:
 
-https://www.kaggle.com/datasets/jayitabhattacharyya/hackerearth-arcenter-the-travelverse/data
+## Bronze Layer
 
-It contains airline ticketing data including:
+Raw ingested source data.
 
-* transaction_key
-* ticketing_airline
-* agency
-* issue_date
-* origin
-* destination
-* cabin
+Examples:
 
----
+* original transactions
+* unchanged raw records
+* landing zone tables
 
-# Architecture (Medallion)
+## Silver Layer
 
-The pipeline follows the Medallion Architecture:
+Cleaned and standardized business model.
 
-**Bronze (TRAVEL_RAW)** – raw ingested data
-**Silver (AIRLINE, ROUTE, FACT_TRAVEL)** – cleaned and structured data model (Apache Spark processing)
-**Gold (TRAVEL_GOLD)** – aggregated data for analytics
+Examples:
 
-Data flows sequentially from Bronze → Silver → Gold.
+* removed duplicates
+* handled null values
+* standardized airline names
+* transformed routes
+* structured dimension/fact model
 
----
+## Gold Layer
 
-## Architecture Diagram
+Aggregated analytics-ready output.
 
-![Architecture](high-level-architecture.png)
+Examples:
 
-## Data Model
-
-![Data Model](db-architecture.png)
+* top airlines by transaction volume
+* route statistics
+* reporting tables
 
 ---
 
-# Orchestration
+# Workflow Orchestration (Apache Airflow)
 
-The pipeline is orchestrated using a single Python entrypoint:
+The pipeline is orchestrated with **Apache Airflow** as a DAG consisting of three sequential tasks:
 
+```text
+bronze → silver → gold
 ```
-python orchestration/run_pipeline.py
-```
 
-Execution order:
+## Airflow DAG
 
-1. Bronze layer ingestion
-2. Silver layer transformations (Apache Spark)
-3. Gold layer aggregation
+![Airflow DAG](images/airflow-dag.png)
 
-Each layer executes sequentially using a centralized pipeline orchestrator.
+## Successful Pipeline Run
+
+![Airflow Success](images/airflow-success.png)
 
 ---
 
-# Processing Engine
+# Technical Architecture
 
-The Silver layer is processed using Apache Spark to provide scalable data transformations.
-Spark session is initialized inside the Silver layer and used as the main Big Data processing engine.
-
-This satisfies the requirement of using a scalable processing engine with a single pipeline entry point.
+![Architecture](images/high-level-architecture.png)
 
 ---
 
-# Pipeline Execution Flow
+# Data Model
 
-The pipeline executes in the following order:
-
-## Bronze
-
-* create_schema.sql
-* create_stage.sql
-* create_stage_table.sql
-* load_stage.sql
-* create_tables.sql
-* load_bronze.sql
-
-## Silver (Spark)
-
-* Spark session initialization
-* Data transformation logic
-* Data cleaning
-* Business model transformation
-
-## Gold
-
-* create_tables.sql
-* aggregation query (TRAVEL_GOLD)
-
-The pipeline is executed sequentially using Python orchestrator.
-
----
-
-# Data Pipeline
-
-1. Load raw data into TRAVEL_RAW
-2. Clean and transform data in Silver layer using Apache Spark
-3. Create dimension tables AIRLINE and ROUTE
-4. Create fact table FACT_TRAVEL
-5. Aggregate data to create TRAVEL_GOLD
-
----
-
-# Data Cleaning (Silver Layer)
-
-The following transformations were applied:
-
-* Removed NULL values from transaction_key
-* Removed duplicates using DISTINCT
-* Trimmed text fields (ticketing_airline, agency)
-* Converted issue_date to DATE format
-* Standardized airline names
-* Standardized route data
-
----
-
-# Aggregation (Gold Layer)
-
-The Gold layer joins the fact and dimension tables and aggregates the data to calculate the number of transactions per airline and route.
-
-This layer produces analytics-ready data.
-
----
-
-# Idempotency Strategy
-
-The pipeline is designed to be idempotent:
-
-* Bronze layer uses append-only ingestion
-* Silver layer uses deterministic Spark transformations
-* Gold layer uses repeatable aggregation logic
-* Tables created using CREATE IF NOT EXISTS
-* Pipeline can be safely re-run multiple times
-
----
-
-# Technologies Used
-
-* Python (pipeline orchestration)
-* SQL (data transformations)
-* Apache Spark (Silver layer processing engine)
-* Snowflake
-* Medallion Architecture
-* ELT pipeline design
-* GitHub
+![Data Model](images/db-architecture.png)
 
 ---
 
 # Repository Structure
 
-```
-bronze/          - raw ingestion layer  
-silver/          - cleaned and structured tables  
-gold/            - aggregated analytics layer  
-orchestration/   - pipeline orchestrator (Python)  
-
-db-architecture.png  
-high-level-architecture.png  
-README.md  
+```text
+flights-elt-medallion-pipeline/
+│── bronze/                 # raw ingestion SQL
+│── silver/                 # transformation layer SQL
+│── gold/                   # aggregation layer SQL
+│── orchestration/          # python pipeline scripts
+│── airflow/
+│   ├── dags/              # airflow DAG definitions
+│   └── docker-compose.yml # local airflow setup
+│── images/                # screenshots / diagrams
+│── README.md
 ```
 
 ---
 
-# How to Run
+# Technologies Used
 
-Clone the repository:
-
-```
-git clone <repo>
-```
-
-Go to project directory:
-
-```
-cd flights-elt-medallion-pipeline
-```
-
-Run pipeline:
-
-```
-python orchestration/run_pipeline.py
-```
+* Python
+* SQL
+* Apache Airflow
+* Docker
+* Apache Spark (Silver layer concept)
+* Snowflake-ready ELT design
+* GitHub
 
 ---
 
 # Pipeline Flow
 
-```
+```text
 Raw Data
    ↓
-Bronze (SQL ingestion)
+Bronze
    ↓
-Silver (Apache Spark processing)
+Silver
    ↓
-Gold (aggregation)
+Gold
    ↓
-Analytics
+Analytics / Reporting
 ```
+
+---
+
+# Data Quality Rules (Silver Layer)
+
+Applied transformations include:
+
+* NULL filtering
+* duplicate removal
+* field standardization
+* schema cleanup
+* route normalization
+* business-ready formatting
+
+---
+
+# Idempotency
+
+The pipeline is designed to be safely re-run.
+
+Features:
+
+* deterministic transformations
+* repeatable SQL logic
+* CREATE IF NOT EXISTS patterns
+* stable task ordering in Airflow
+
+---
+
+# How to Run Locally
+
+## 1. Clone repository
+
+```bash
+git clone <your-repository-url>
+cd flights-elt-medallion-pipeline
+```
+
+## 2. Start Airflow
+
+```bash
+cd airflow
+docker compose up
+```
+
+## 3. Open UI
+
+```text
+http://localhost:8080
+```
+
+## 4. Trigger DAG
+
+Run:
+
+```text
+flights_pipeline
+```
+
+---
+
+# Why This Project Matters
+
+This repository demonstrates practical skills expected in Data Engineering roles:
+
+* pipeline orchestration
+* DAG dependency management
+* layered architecture
+* ETL / ELT thinking
+* production-style project structure
+* maintainable repository design
+
+---
+
+# Future Improvements
+
+* real Spark cluster integration
+* automated tests
+* CI/CD deployment
+* dbt transformations
+* data quality monitoring
+* cloud deployment (AWS / Azure / GCP)
 
 ---
 
 # Author
 
-Julia Kramek
+**Julia Kramek**
