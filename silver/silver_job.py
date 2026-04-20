@@ -1,22 +1,11 @@
-from pyspark.sql import SparkSession
-
-spark = SparkSession.builder \
-    .appName("Silver Layer") \
-    .master("local[*]") \
-    .getOrCreate()
+import pandas as pd
 
 print("Starting Silver layer")
 
-df = spark.read.csv(
-    "archive-2/travelverse-dataset.csv",
-    header=True,
-    inferSchema=True
-)
+df = pd.read_csv("/opt/project/archive-2/travelverse-dataset.csv")
 
-df = df.dropDuplicates()
+df = df.drop_duplicates()
 
-df.write.mode("overwrite").parquet("/opt/project/silver/output")
+df.to_parquet("/opt/project/silver/output", index=False)
 
 print("Silver completed")
-
-spark.stop()
