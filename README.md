@@ -73,23 +73,23 @@ bronze → silver → gold
 
 ## Airflow DAG
 
-![Airflow DAG](images/airflow-dag.png)
+![Airflow DAG](airflow/airflow-dag.png)
 
 ## Successful Pipeline Run
 
-![Airflow Success](images/airflow-success.png)
+![Airflow Success](airflow/airflow-success.png)
 
 ---
 
 # Technical Architecture
 
-![Architecture](images/high-level-architecture.png)
+![Architecture](high-level-architecture.png)
 
 ---
 
 # Data Model
 
-![Data Model](images/db-architecture.png)
+![Data Model](db-architecture.png)
 
 ---
 
