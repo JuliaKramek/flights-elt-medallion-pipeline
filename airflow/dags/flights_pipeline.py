@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 default_args = {
     "owner": "Julia",
     "depends_on_past": False,
-    "retries": 2,
-    "retry_delay": timedelta(minutes=2)
+    "retries": 1,
+    "retry_delay": timedelta(minutes=1)
 }
 
 with DAG(
@@ -25,7 +25,8 @@ with DAG(
 
     silver = BashOperator(
         task_id="silver_layer",
-        bash_command="spark-submit /opt/project/silver/silver_job.py"
+        bash_command="python /opt/project/silver/silver_job.py"
+
     )
 
     gold = BashOperator(
