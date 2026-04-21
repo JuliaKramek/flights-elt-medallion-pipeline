@@ -232,33 +232,6 @@ The Gold layer calculates:
 
 This creates an analytics-ready dataset for BI and reporting purposes.
 
----
-
-# Idempotency Strategy
-
-The pipeline was designed for repeatable execution:
-
-- deterministic SQL transformations
-- re-runnable layer execution
-- safe reprocessing logic
-- Airflow retry support
-
----
-
-# Repository Structure
-
-bronze/          raw ingestion SQL logic
-silver/          cleansed model + transformations
-gold/            aggregated analytics layer
-airflow/
-├── dags/
-├── docker-compose.yml
-├── airflow-dag.png
-└── airflow-success.png
-
-db-architecture.png
-high-level-architecture.png
-README.md
 
 ---
 
