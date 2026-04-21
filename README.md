@@ -2,7 +2,7 @@
 
 ELT pipeline implementing **Medallion Architecture** (**Bronze, Silver, Gold**) to process airline transaction data and identify the most frequently used airlines based on transaction counts.
 
-The project demonstrates workflow orchestration using **Apache Airflow**, layered data modeling, and SQL-based transformations executed in **PostgreSQL**.
+The project demonstrates workflow orchestration using **Apache Airflow**, layered data modeling, and SQL-based transformations.
 
 ---
 
@@ -50,7 +50,7 @@ It contains airline ticketing data including:
 
 ---
 
-# Technology Stack
+# Technologies
 
 - Apache Airflow – workflow orchestration and scheduling
 - PostgreSQL – data storage and SQL transformations
