@@ -20,7 +20,7 @@ consumer = KafkaConsumer(
     value_deserializer=lambda x: json.loads(x.decode('utf-8'))
 )
 
-print("🚀 Consumer działa, czekam na dane...")
+print("Consumer działa, czekam na dane...")
 
 for message in consumer:
     data = message.value
@@ -65,8 +65,8 @@ for message in consumer:
         ))
 
         conn.commit()
-        print("✅ Inserted:", data.get("TRANSACTION_KEY"))
+        print("Inserted:", data.get("TRANSACTION_KEY"))
 
     except Exception as e:
-        print("❌ Error:", e)
+        print("Error:", e)
         conn.rollback()
