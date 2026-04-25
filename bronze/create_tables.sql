@@ -1,19 +1,18 @@
-CREATE OR REPLACE TABLE FLIGHTS.BRONZE.TRAVEL_RAW (
-
-TRANSACTION_KEY VARCHAR,
-ORIGIN VARCHAR,
-DESTINATION VARCHAR,
-TICKETING_AIRLINE VARCHAR,
-MARKETING_AIRLINE VARCHAR,
-AGENCY VARCHAR,
-CABIN VARCHAR,
-COUNTRY VARCHAR,
-ISSUE_DATE VARCHAR,
-DEPARTURE_DATE VARCHAR,
-FLIGHT_NUMBER VARCHAR,
-SEG_NUMBER VARCHAR,
-
-_LOAD_TIMESTAMP TIMESTAMP_LTZ DEFAULT CURRENT_TIMESTAMP(),
-_BATCH_ID VARCHAR DEFAULT UUID_STRING()
-
+CREATE TABLE bronze.travel_raw (
+    transaction_key TEXT,
+    ticketing_airline TEXT,
+    ticketing_airline_cd TEXT,
+    agency TEXT,
+    issue_date TEXT,
+    country TEXT,
+    transaction_type TEXT,
+    trip_type TEXT,
+    seg_number TEXT,
+    marketing_airline TEXT,
+    marketing_airline_cd TEXT,
+    flight_number TEXT,
+    cabin TEXT,
+    origin TEXT,
+    destination TEXT,
+    departure_date TEXT
 );
