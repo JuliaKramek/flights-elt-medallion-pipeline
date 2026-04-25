@@ -2,71 +2,81 @@ import json
 from kafka import KafkaConsumer
 import psycopg2
 
-conn = psycopg2.connect(
-    host="localhost",        # jeśli docker: "postgres"
-    port="5433",             # jeśli docker: 5432
-    database="flights",
-    user="airflow",
-    password="airflow"
-)
+# --- CONFIG ---
+KAFKA_TOPIC = "flights_topic"
+KAFKA_SERVER = "localhost:9093"
 
-cur = conn.cursor()
+POSTGRES_CONFIG = {
+    "host": "localhost",
+    "port": "5433",
+    "database": "flights",
+    "user": "airflow",
+    "password": "airflow"
+}
 
+MAX_MESSAGES = 100  
+
+# --- CONNECT TO DB ---
+conn = psycopg2.connect(**POSTGRES_CONFIG)
+cursor = conn.cursor()
+
+# --- CONNECT TO KAFKA ---
 consumer = KafkaConsumer(
-    'flights_topic',
-    bootstrap_servers='localhost:9093',   # jeśli docker: 'kafka:9092'
-    auto_offset_reset='earliest',
-    group_id='flights_group',
-    value_deserializer=lambda x: json.loads(x.decode('utf-8'))
+    KAFKA_TOPIC,
+    bootstrap_servers=KAFKA_SERVER,
+    value_deserializer=lambda x: json.loads(x.decode("utf-8")),
+    auto_offset_reset="earliest",
+    enable_auto_commit=True
 )
 
-print("Consumer działa, czekam na dane...")
+print(" Consumer started...")
 
-for message in consumer:
-    data = message.value
-
+# --- CONSUME ---
+for i, message in enumerate(consumer):
     try:
-        cur.execute("""
+        data = message.value
+
+        cursor.execute("""
             INSERT INTO bronze.travel_raw (
                 transaction_key,
                 ticketing_airline,
-                ticketing_airline_cd,
+                marketing_airline,
                 agency,
                 issue_date,
-                country,
-                transaction_type,
-                trip_type,
-                seg_number,
-                marketing_airline,
-                marketing_airline_cd,
-                flight_number,
-                cabin,
+                departure_date,
                 origin,
                 destination,
-                departure_date
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                country,
+                cabin
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             data.get("TRANSACTION_KEY"),
             data.get("TICKETING_AIRLINE"),
-            data.get("TICKETING_AIRLINE_CD"),
+            data.get("MARKETING_AIRLINE"),
             data.get("AGENCY"),
             data.get("ISSUE_DATE"),
-            data.get("COUNTRY"),
-            data.get("TRANSACTION_TYPE"),
-            data.get("TRIP_TYPE"),
-            data.get("SEG_NUMBER"),
-            data.get("MARKETING_AIRLINE"),
-            data.get("MARKETING_AIRLINE_CD"),
-            data.get("FLIGHT_NUMBER"),
-            data.get("CABIN"),
+            data.get("DEPARTURE_DATE"),
             data.get("ORIGIN"),
             data.get("DESTINATION"),
-            data.get("DEPARTURE_DATE")
+            data.get("COUNTRY"),
+            data.get("CABIN")
         ))
 
         conn.commit()
-        print("Inserted:", data.get("TRANSACTION_KEY"))
+
+        print(f"Inserted: {data.get('TRANSACTION_KEY')}")
 
     except Exception as e:
-        print("Error:", e)
-        conn.rollback()
+        print(f" Error: {e}")
+
+    # STOP dla Airflow
+    if i >= MAX_MESSAGES:
+        print("Reached limit, stopping consumer...")
+        break
+
+# --- CLEANUP ---
+cursor.close()
+conn.close()
+consumer.close()
+
+print(" Consumer finished.")
