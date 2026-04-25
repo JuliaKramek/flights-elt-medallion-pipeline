@@ -13,8 +13,8 @@ PG = 'PGPASSWORD=airflow psql -h postgres -U airflow -d flights -f'
 
 with DAG(
     dag_id="flights_pipeline",
-    start_date=datetime(2024, 1, 1),  # 🔥 poprawione
-    schedule_interval=None,           # 🔥 manual trigger (lepsze na demo)
+    start_date=datetime(2024, 1, 1), 
+    schedule_interval=None,           
     catchup=False,
     default_args=default_args,
     description="ELT Medallion Pipeline with Kafka streaming",
