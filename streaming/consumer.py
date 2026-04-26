@@ -7,8 +7,8 @@ KAFKA_TOPIC = "flights_topic"
 KAFKA_SERVER = "localhost:9093"
 
 POSTGRES_CONFIG = {
-    "host": "localhost",      # jeśli w dockerze: "postgres"
-    "port": "5433",           # jeśli w dockerze: 5432
+    "host": "localhost",      
+    "port": "5433",           
     "database": "flights",
     "user": "airflow",
     "password": "airflow"
