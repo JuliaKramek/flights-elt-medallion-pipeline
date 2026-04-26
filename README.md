@@ -268,6 +268,12 @@ The Gold layer calculates:
 
 This creates an analytics-ready dataset for BI and reporting purposes.
 
+##  Data Quality Metrics
+
+- Completeness of transaction_key > 98%
+- Uniqueness of transaction_key = 100%
+- Data freshness < 2 days
+
 ---
 
 # How to Run
