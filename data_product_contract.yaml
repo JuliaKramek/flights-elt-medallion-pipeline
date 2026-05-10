@@ -47,23 +47,27 @@ orchestration:
 storage:
   database: PostgreSQL
 
-schema:
+  schema:
   - name: ticketing_airline
     type: TEXT
     description: Airline issuing the ticket
 
-  - name: total_transactions
-    type: INTEGER
-    description: Total number of airline transactions
-
-  - name: route
+  - name: origin
     type: TEXT
-    description: Flight route between origin and destination
+    description: Departure airport
+
+  - name: destination
+    type: TEXT
+    description: Arrival airport
 
   - name: cabin
     type: TEXT
     description: Cabin class category
 
+  - name: total_transactions
+    type: INTEGER
+    description: Total number of airline transactions
+    
 refresh_frequency:
   batch: Daily
   streaming: Real-time
