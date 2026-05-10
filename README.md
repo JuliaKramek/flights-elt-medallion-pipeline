@@ -17,7 +17,7 @@ The objective is to transform raw airline transaction data into structured and a
 * popular routes
 * customer booking behavior
 
-The pipeline executes sequentially across Bronze, Silver, and Gold layers and is orchestrated using **Apache Airflow**, while streaming ingestion is handled independently via **Kafka**.
+The pipeline executes sequentially across Bronze, Silver, and Gold layers and is orchestrated using **Apache Airflow**, while streaming ingestion is handled using **Kafka**.
 
 ---
 
@@ -107,6 +107,8 @@ Purpose:
 * KPI reporting
 * top airlines ranking
 
+Gold layer provides aggregated analytics by airline, route, and cabin class.
+
 ---
 
 # Data Ingestion Strategy
@@ -116,7 +118,7 @@ The pipeline supports two ingestion modes:
 * **Batch ingestion (Airflow)** – used for historical data loading
 * **Streaming ingestion (Kafka)** – used for incremental real-time data
 
-Both ingestion methods write to the same Bronze layer, ensuring a unified and consistent data entry point.
+Both ingestion methods ultimately populate the Bronze layer, ensuring a unified ingestion architecture.
 
 ---
 
@@ -132,7 +134,7 @@ The project includes a streaming module responsible for real-time ingestion.
 
 Structure:
 
-```id="ijmztr"
+```text
 streaming/
 ├── producer.py
 └── consumer.py
@@ -140,7 +142,7 @@ streaming/
 
 * **Producer** reads data and sends it to a Kafka topic
 * **Consumer** listens to the topic and inserts data into `bronze.travel_raw`
-* Streaming operates independently from Airflow
+* Kafka streaming is triggered as part of the Airflow orchestration workflow
 
 This enables:
 
@@ -179,6 +181,7 @@ Pipeline Execution Order:
 1. Bronze ingestion
 2. Silver transformations
 3. Gold aggregation
+4. Kafka consumer execution
 
 ---
 
@@ -240,7 +243,7 @@ Includes:
 2. Data cleaned and standardized in Silver layer
 3. Dimension tables created
 4. Fact table populated
-5. Gold layer aggregates transactions by airline
+5. Gold layer aggregates transactions by airline, route, and cabin class
 
 ---
 
@@ -268,11 +271,13 @@ The Gold layer calculates:
 
 This creates an analytics-ready dataset for BI and reporting purposes.
 
-##  Data Quality Metrics
+---
 
-- Completeness of transaction_key > 98%
-- Uniqueness of transaction_key = 100%
-- Data freshness < 2 days
+# Data Quality Metrics
+
+* Completeness of transaction_key > 98%
+* Uniqueness of transaction_key = 100%
+* Data freshness < 2 days
 
 ---
 
@@ -280,20 +285,41 @@ This creates an analytics-ready dataset for BI and reporting purposes.
 
 ## Clone Repository
 
+```bash
 git clone <repo-url>
 cd flights-elt-medallion-pipeline
+```
 
 ## Start Environment
 
-docker compose up
+```bash
+docker-compose up -d
+```
 
 ## Open Airflow UI
 
+```text
 http://localhost:8080
+```
+
+Login:
+
+```text
+username: airflow
+password: airflow
+```
 
 ## Trigger DAG
 
+```text
 flights_pipeline
+```
+
+---
+
+# Final Architecture Summary
+
+The pipeline supports both batch and streaming ingestion. Airflow orchestrates batch processing and triggers Kafka consumer for streaming, while data is stored using Medallion Architecture.
 
 ---
 
