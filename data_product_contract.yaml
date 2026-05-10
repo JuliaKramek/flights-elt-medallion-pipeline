@@ -1,0 +1,144 @@
+product_name: Flights Travel Analytics Data Product
+
+product_owner:
+  name: Julia Kramek
+  role: Data Engineering Student
+
+description: >
+  Data product providing airline transaction analytics using
+  Medallion Architecture (Bronze, Silver, Gold).
+  Supports both batch and streaming ingestion.
+
+product_purpose: >
+  Provides analytics-ready airline transaction data
+  for reporting, airline popularity analysis,
+  route analysis, booking behavior insights,
+  and transaction trend analytics.
+
+architecture:
+  type: Medallion Architecture
+
+layers:
+  bronze:
+    description: Raw ingested source data
+    ingestion:
+      - Batch ingestion
+      - Kafka streaming ingestion
+
+  silver:
+    description: Cleaned and standardized relational model
+
+  gold:
+    description: Aggregated business-ready analytical layer
+
+main_table: gold.travel_gold
+
+data_sources:
+  - name: Travelverse dataset
+    type: CSV
+    url: https://www.kaggle.com/datasets/jayitabhattacharyya/hackerearth-arcenter-the-travelverse/data
+
+  - name: Kafka streaming
+    type: Real-time event ingestion
+
+orchestration:
+  tool: Apache Airflow
+
+storage:
+  database: PostgreSQL
+
+schema:
+  - name: ticketing_airline
+    type: TEXT
+    description: Airline issuing the ticket
+
+  - name: total_transactions
+    type: INTEGER
+    description: Total number of airline transactions
+
+  - name: route
+    type: TEXT
+    description: Flight route between origin and destination
+
+  - name: cabin
+    type: TEXT
+    description: Cabin class category
+
+refresh_frequency:
+  batch: Daily
+  streaming: Real-time
+
+access:
+  method: PostgreSQL
+  host: localhost
+  port: 5433
+  database: flights
+  table: gold.travel_gold
+
+  airflow_ui:
+    url: http://localhost:8080
+    username: airflow
+    password: airflow
+
+quality_metrics:
+  - metric_name: Completeness of transaction_key
+    definition: Percentage of rows where transaction_key is not NULL
+    current_value: 99.4%
+    expected_threshold: ">98%"
+    update_cadence: Every pipeline run
+
+  - metric_name: Uniqueness of transaction_key
+    definition: Percentage of unique transaction_key values
+    current_value: 100%
+    expected_threshold: "100%"
+    update_cadence: Every pipeline run
+
+  - metric_name: Data Freshness
+    definition: Time since last successful pipeline update
+    current_value: "<1 day"
+    expected_threshold: "<2 days"
+    update_cadence: Daily
+
+  - metric_name: Validity of departure_date
+    definition: Percentage of rows where departure_date is later than or equal to issue_date
+    current_value: 98.7%
+    expected_threshold: ">95%"
+    update_cadence: Every pipeline run
+
+  - metric_name: Row Count Validation
+    definition: Checks whether records were successfully loaded into Gold layer
+    current_value: ">0 rows"
+    expected_threshold: ">0"
+    update_cadence: Every pipeline run
+
+known_limitations:
+  - Bronze layer stores raw data as TEXT
+  - Source dataset may contain missing or inconsistent values
+  - Streaming ingestion is locally simulated using Kafka
+  - Dataset represents a limited public sample and may not reflect production-scale airline systems
+
+repository:
+  github: https://github.com/JuliaKramek/flights-elt-medallion-pipeline
+
+example_usage:
+  sql: |
+    SELECT ticketing_airline,
+           SUM(total_transactions) AS transactions
+    FROM gold.travel_gold
+    GROUP BY ticketing_airline
+    ORDER BY transactions DESC;
+
+  python: |
+    import pandas as pd
+    import sqlalchemy
+
+    engine = sqlalchemy.create_engine(
+        "postgresql://user:password@localhost:5433/flights"
+    )
+
+    df = pd.read_sql(
+        "SELECT * FROM gold.travel_gold",
+        engine
+    )
+
+    print(df.head())
