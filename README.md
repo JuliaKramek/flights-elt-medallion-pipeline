@@ -272,13 +272,19 @@ The Gold layer calculates:
 This creates an analytics-ready dataset for BI and reporting purposes.
 
 ---
-
 # Data Quality Metrics
 
-* Completeness of transaction_key > 98%
-* Uniqueness of transaction_key = 100%
-* Data freshness < 2 days
+The data product includes multiple Data Quality metrics to ensure that analytical outputs remain reliable and suitable for reporting and BI usage.
 
+| Metric | Purpose | Threshold |
+|---|---|---|
+| Completeness of transaction_key | Ensures that transaction records contain valid identifiers | > 98% |
+| Uniqueness of transaction_key | Prevents duplicate transaction aggregation | 100% |
+| Data Freshness | Confirms successful pipeline and Gold layer updates | < 2 days |
+| Validity of departure_date | Ensures departure dates are later than or equal to issue dates | > 95% |
+| Row Count Validation | Confirms Gold layer contains analytical output after execution | > 0 rows |
+
+Although the dataset is historical, freshness is still monitored to validate successful pipeline execution and timely updates of analytical layers.
 ---
 
 # How to Run
